@@ -34,13 +34,24 @@ def save_order_endpoint(current_user):
     if not data or not data.get('order_items'):
         return jsonify({"code": 400, "message": "无效订单，必须包含产品项"}), 400
 
+    # 【新增】从请求数据中获取 order_date
+    order_date_str = data.get('order_date')
+    if not order_date_str:
+        return jsonify({"code": 400, "message": "订单日期不能为空"}), 400
+
+    try:
+        # 将日期字符串转换为 date 对象
+        order_date_obj = datetime.strptime(order_date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({"code": 400, "message": "订单日期格式不正确，应为YYYY-MM-DD"}), 400
 
     # 为了保证数据一致性，使用数据库事务
-    # === 请用这个版本替换掉 order_api.py 中原有的 try...except 代码块 ===
     try:
         # --- 1. 进行最终计算 ---
         total_order_amount = sum(float(item['item_amount']) for item in data['order_items'])
-        total_gifting_cost = sum(float(item['item_gifting_cost']) for item in data['order_items'])
+        
+        # 【关键修复点】直接使用前端传递过来的总搭赠费用，因为它已经包含了所有搭赠类型
+        total_gifting_cost_from_parser = float(data.get('total_gifting_cost', 0.0))
 
         total_commission = 0.0 # 初始化为浮点数
         for item in data['order_items']:
@@ -50,23 +61,25 @@ def save_order_endpoint(current_user):
                 total_commission += float(product.commission_per_item) * int(item['quantity'])
 
         # 净收入预估 = 总提成 + 陈列费 - 旧货处理费 - 搭赠费用
+        # 使用从解析器获取的总搭赠费用进行计算
         net_income_estimate = (total_commission + 
                                 float(data.get('display_fee', 0)) - 
                                 float(data.get('old_goods_disposal_fee', 0)) - 
-                                total_gifting_cost)
+                                total_gifting_cost_from_parser)
 
         # --- 2. 创建Order主记录 ---
         new_order = Order(
             user_id=current_user.id,
-            order_date=date.today(),
+            order_date=order_date_obj, # 【修改】使用从前端接收到的日期
             customer_name=data['customer_name'],
             original_text=data.get('original_text', ''),
             total_order_amount=total_order_amount,
             total_commission=total_commission,
-            display_fee=data.get('display_fee', 0),
-            old_goods_disposal_fee=data.get('old_goods_disposal_fee', 0),
-            gifting_cost=total_gifting_cost,
-            net_income_estimate=net_income_estimate
+            display_fee=float(data.get('display_fee', 0)), # 确保费用类型是浮点数
+            old_goods_disposal_fee=float(data.get('old_goods_disposal_fee', 0)), # 确保费用类型是浮点数
+            gifting_cost=total_gifting_cost_from_parser, # 【关键修复点】将解析器算出的总搭赠费用保存
+            net_income_estimate=net_income_estimate,
+            other_expenses=float(data.get('other_expenses', 0)) # 确保其他费用也保存
         )
         db.session.add(new_order)
         db.session.flush()
@@ -82,7 +95,7 @@ def save_order_endpoint(current_user):
                     quantity=item_data['quantity'],
                     actual_unit_price=item_data['actual_unit_price'],
                     item_amount=item_data['item_amount'],
-                    item_gifting_cost=item_data['item_gifting_cost']
+                    item_gifting_cost=float(item_data.get('item_gifting_cost', 0)) # 确保这里也是浮点数
                 )
                 db.session.add(new_item)
 
@@ -97,7 +110,6 @@ def save_order_endpoint(current_user):
         print(f"Error occurred: {e}") 
         return jsonify({'message': '保存失败，服务器内部错误', 'error': str(e)}), 500
     
-
 
 # === 请用这个新版本替换旧的 get_daily_summary 函数 ===
 @order_bp.route('/daily_summary', methods=['GET'])

@@ -4,7 +4,8 @@ import re
 from app.models.product import Product
 
 def parse_order_text(text_content: str) -> dict:
-    parsed_data = { "customer_name": "", "order_items": [], "display_fee": 0.0, "old_goods_disposal_fee": 0.0, "messages": [] }
+    # 修复：初始化 parsed_data 时包含 total_gifting_cost
+    parsed_data = { "customer_name": "", "order_items": [], "display_fee": 0.0, "old_goods_disposal_fee": 0.0, "total_gifting_cost": 0.0, "messages": [] }
     lines = [line.strip() for line in text_content.strip().split('\n') if line.strip()]
     if not lines: return parsed_data
     
@@ -20,15 +21,22 @@ def parse_order_text(text_content: str) -> dict:
         "1升" : "1L",
         "1.5升": "1.5L",
         "1升春拂绿茶": "900/1L春拂绿茶",
+        "小茗同学": "450ml小茗同学",
         "900春拂绿茶": "900/1L春拂绿茶",
         "1升海之言柠檬": "1L海之言柠檬",
         "1升海之言西柚": "1L海之言西柚",
+        "1升水晶葡萄": "1L水晶葡萄", 
+        "1升金桔": "1L金桔柠檬", 
         "大红袍牛乳茶":"希蒂大红袍",
-        "水晶": "水晶葡萄",
         "金桔": "金桔柠檬",
         "雪梨": "冰糖雪梨",
+        "冰糖雪梨": "冰糖雪梨",
+        "1升绿茶": "1L绿茶",
         "费用": "陈列费" # 费用关键词别名
     }
+
+    # 定义用于识别“减返”或“搭赠”的正则表达式
+    gifting_deduction_pattern = re.compile(r'(?:减返|搭赠|搭增)\s*(\d+(?:\.\d+)?)\s*元?')
 
 
     temp_items_list = []
@@ -51,6 +59,12 @@ def parse_order_text(text_content: str) -> dict:
             elif '扣旧货' in part or '旧货' in part:
                 numbers = re.findall(r'\d+\.?\d+', part)
                 if numbers: parsed_data['old_goods_disposal_fee'] += float(numbers[-1])
+                is_processed = True
+            # 识别“减返”或“搭赠”，并将其金额加入总搭赠费用
+            elif gifting_deduction_pattern.search(part):
+                match = gifting_deduction_pattern.search(part)
+                if match:
+                    parsed_data['total_gifting_cost'] += float(match.group(1)) # 直接累加到已初始化的 total_gifting_cost
                 is_processed = True
 
             if is_processed: continue
@@ -82,8 +96,12 @@ def parse_order_text(text_content: str) -> dict:
                             best_match_product = db_product
                 
                 if best_match_product and highest_score / len(input_keywords) >= 0.5:
-                    actual_price = float(price_str) if price_str else best_match_product.unit_price
-                    temp_items_list.append({ "product_name": best_match_product.name, "unit_price": best_match_product.unit_price, "quantity": quantity, "actual_unit_price": actual_price })
+                    # 关键修复点：如果 price_str 为 None，则使用数据库原价
+                    actual_price = float(price_str) if price_str else float(best_match_product.unit_price) 
+                    
+                    item_gifting_cost = max(0, float(best_match_product.unit_price) - actual_price) * quantity 
+                    
+                    temp_items_list.append({ "product_name": best_match_product.name, "unit_price": best_match_product.unit_price, "quantity": quantity, "actual_unit_price": actual_price, 'item_gifting_cost': item_gifting_cost })
                 else:
                     unrecognized_parts.append(part)
             else:
@@ -101,8 +119,8 @@ def parse_order_text(text_content: str) -> dict:
         name = item['product_name']
         consolidated_items[name]['quantity'] += item['quantity']
         consolidated_items[name]['total_amount'] += item['quantity'] * float(item['actual_unit_price'])
-        gifting = max(0, float(item['unit_price']) - float(item['actual_unit_price'])) * item['quantity']
-        consolidated_items[name]['total_gifting'] += gifting
+        # item['item_gifting_cost'] 已经包含了这个产品本身的搭赠
+        consolidated_items[name]['total_gifting'] += item['item_gifting_cost'] 
         consolidated_items[name]['unit_price'] = item['unit_price']
         
     for name, data in consolidated_items.items():
@@ -110,7 +128,12 @@ def parse_order_text(text_content: str) -> dict:
         parsed_data['order_items'].append({ 'product_name': name, 'quantity': data['quantity'], 'actual_unit_price': round(avg_price, 2), 'item_amount': data['total_amount'], 'item_gifting_cost': data['total_gifting'] })
         
     parsed_data['total_item_count'] = sum(item['quantity'] for item in parsed_data['order_items'])
-    parsed_data['total_gifting_cost'] = sum(item['item_gifting_cost'] for item in parsed_data['order_items'])
+    
+    # 修复：将产品项的搭赠成本累加到总搭赠费用中
+    # parsed_data['total_gifting_cost'] 已经包含了额外识别的“减返/搭赠”金额
+    # 这里再累加产品项的搭赠成本。
+    parsed_data['total_gifting_cost'] += sum(item['item_gifting_cost'] for item in parsed_data['order_items'])
+
     total_commission = 0
     for item in parsed_data['order_items']:
         product = Product.query.filter_by(name=item['product_name']).first()

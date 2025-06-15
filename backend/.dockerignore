@@ -1,0 +1,12 @@
+# 忽略Python的虚拟环境和缓存文件
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# 忽略我们本地的环境变量文件
+.env
+
+# 忽略Git文件
+.git
+.gitignore
