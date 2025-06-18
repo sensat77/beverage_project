@@ -1,7 +1,7 @@
 # /backend/app/routes/report_api.py (功能完整版)
 
 from flask import Blueprint, request, jsonify
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, distinct
 from datetime import datetime
 from app.extensions import db
 from app.models.order import Order, OrderItem
@@ -67,3 +67,36 @@ def delete_order(current_user, order_id):
     db.session.delete(order)
     db.session.commit()
     return jsonify({'message': '订单删除成功'})
+
+# API 4: 获取指定日期重点产品售卖件数和家数 (用于首页展示)
+@report_bp.route('/top_product_sales', methods=['GET'])
+@token_required
+def get_top_product_sales(current_user):
+    date_str = request.args.get('date')
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date()
+    except ValueError:
+        return jsonify([]) # 日期格式错误返回空列表
+
+    # 查询逻辑：按产品名称分组，统计总件数和涉及的客户家数
+    top_products = db.session.query(
+        OrderItem.product_name,
+        func.sum(OrderItem.quantity).label('total_quantity'),
+        func.count(distinct(Order.customer_name)).label('customer_count') # 统计去重后的客户名称数量
+    ).join(Order, Order.id == OrderItem.order_id)\
+     .filter(Order.user_id == current_user.id, Order.order_date == target_date)\
+     .group_by(OrderItem.product_name)\
+     .order_by(func.sum(OrderItem.quantity).desc())\
+     .limit(5)\
+     .all()
+    
+    # 转换为字典列表
+    result_list = []
+    for p in top_products:
+        result_list.append({
+            'product_name': p.product_name,
+            'total_quantity': int(p.total_quantity or 0), # 确保是整数
+            'customer_count': int(p.customer_count or 0) # 确保是整数
+        })
+    
+    return jsonify(result_list)

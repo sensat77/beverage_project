@@ -1,6 +1,9 @@
 # 使用一个官方的、轻量级的Python 3.9镜像作为基础
 FROM python:3.9-slim
 
+# === 添加这一行来安装 MySQL 命令行客户端 ===
+RUN apt-get update && apt-get install -y default-mysql-client && rm -rf /var/lib/apt/lists/*
+
 # 在容器内创建一个工作目录 /app
 WORKDIR /app
 
