@@ -1,0 +1,51 @@
+<view class="container">
+  <view class="header">
+    <image class="logo" src="/assets/avatar.png"></image>
+    <view class="title">饮料业务数据管理</view>
+    <view class="version">版本 1.0.0</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">核心功能：如何录入一笔订单？</view>
+    <view class="p">本小程序的核心是通过“智能解析”功能，快速将您的文本订单转化为结构化数据。请遵循以下步骤：</view>
+    
+    <view class="sub-title">1. 进入录入页面</view>
+    <view class="p">在“首页”点击绿色的【录入新订单】按钮。</view>
+    
+    <view class="sub-title">2. 粘贴订单文本</view>
+    <view class="p">将您的订单文本完整地粘贴到文本框中。小程序支持多种格式，例如：</view>
+    <view class="code-block">
+      <text># 格式一：每项独占一行 (推荐)\n</text>
+      <text>客户A\n</text>
+      <text>1L冰红茶2件24\n</text>
+      <text>500ml阿萨姆1件45\n</text>
+      <text>陈列费100元</text>
+    </view>
+    <view class="code-block">
+      <text># 格式二：单行逗号分隔\n</text>
+      <text>500阿萨姆3件45, 1L绿茶1件31, 扣费用60, 客户B</text>
+    </view>
+
+    <view class="sub-title">3. 点击【智能解析】</view>
+    <view class="p">程序会自动识别客户、产品、数量、价格和费用，并展示在下方。</view>
+
+    <view class="sub-title">4. 核对与修正</view>
+    <view class="p">如果识别结果有误，您可以直接在“解析结果”区域进行修改：</view>
+    <view class="p">- **修改数量/单价**：直接在输入框中修改。</view>
+    <view class="p">- **删除产品**：点击产品名右侧红色的【删除】按钮。</view>
+    <view class="p">- **添加产品**：点击“产品明细”标题右侧的【+ 添加】按钮，在弹窗中搜索并添加。</view>
+
+    <view class="sub-title">5. 保存订单</view>
+    <view class="p">确认所有信息无误后，点击最下方的【确认并保存订单】按钮即可。</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">使用技巧与别名支持</view>
+    <view class="tip">为了达到最佳识别效果，建议您和同事尽量使用标准名称。不过，系统也内置了一些常见别名和错别字纠正：</view>
+    <view class="p">- **尺寸别名**：“一升”可被识别为“1L”；“大阿萨姆”可被识别为“1.5L阿萨姆奶茶”。</view>
+    <view class="p">- **产品简写**：“水晶”可被识别为“水晶葡萄”；“雪梨”可被识别为“冰糖雪梨”。</view>
+    <view class="p">- **错别字**：“啊萨姆”会被自动纠正为“阿萨姆”。</view>
+    <view class="p">- **费用识别**：费用行需要明确包含“陈列费”、“费用”或“旧货”等关键词，并最好以“元”结尾，如“5月费用50元”。</view>
+  </view>
+
+</view>

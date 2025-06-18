@@ -1,0 +1,60 @@
+<view class="page-container">
+  
+    <view class="month-selector">
+    <text class="selector-label">当前选择月份:</text>
+    <picker mode="date" fields="month" value="{{selectedMonth}}" start="2020-01" end="2030-12" bindchange="onMonthChange">
+      <view class="picker-value">
+        {{selectedMonth}} <text class="arrow">▼</text>
+      </view>
+    </picker>
+  </view>
+
+  <view class="card summary-card">
+    <view class="card-title">{{selectedMonth}} 汇总</view>
+    
+    <view class="summary-grid" wx:if="{{summaryData}}">
+      <view class="summary-item">
+        <text class="value highlight">{{summaryData.total_commission_str}}</text>
+        <text class="label">预估总提成 (元)</text>
+      </view>
+      <view class="summary-item">
+        <text class="value">{{summaryData.total_item_count}}</text>
+        <text class="label">总件数</text>
+      </view>
+      <view class="summary-item">
+        <text class="value">{{summaryData.total_order_count}}</text>
+        <text class="label">总单数</text>
+      </view>
+      <view class="summary-item">
+        <text class="value">{{summaryData.total_display_fee_str}}</text>
+        <text class="label">总陈列费 (元)</text>
+      </view>
+      <view class="summary-item">
+        <text class="value">{{summaryData.total_old_goods_disposal_fee_str}}</text>
+        <text class="label">总旧货费 (元)</text>
+      </view>
+      <view class="summary-item">
+        <text class="value">{{summaryData.total_gifting_cost_str}}</text>
+        <text class="label">总搭赠 (元)</text>
+      </view>
+    </view>
+    
+    <view class="no-data" wx:else>
+      {{ isLoading ? '加载中...' : '该月暂无数据' }}
+    </view>
+  </view> <view class="card list-card" wx:if="{{dailyBreakdown.length > 0}}">
+    <view class="card-title">按日明细</view>
+    <view class="day-row header">
+      <text>日期</text>
+      <text>单数</text>
+      <text>总件数</text>
+    </view>
+    <view class="day-row" wx:for="{{dailyBreakdown}}" wx:key="day" 
+          bind:tap="onDayTap" data-day="{{item.day}}">
+      <text class="date">{{selectedMonth}}-{{item.day > 9 ? item.day : '0' + item.day}}</text>
+      <text>{{item.order_count}} 单</text>
+      <text>{{item.item_count}} 件</text>
+    </view>
+  </view>
+
+</view>

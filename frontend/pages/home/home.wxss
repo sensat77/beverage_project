@@ -1,0 +1,200 @@
+/* pages/home/home.wxss (业绩速览布局调整版) */
+.container {
+    padding: 30rpx;
+    background-color: #f7f7f7;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  .welcome-card {
+    background-color: #07c160;
+    padding: 40rpx;
+    border-radius: 20rpx;
+    margin-bottom: 30rpx;
+    text-align: center;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  }
+  
+  .welcome-text {
+    font-size: 38rpx;
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  .section {
+    background-color: #fff;
+    padding: 30rpx;
+    border-radius: 10rpx;
+    margin-bottom: 30rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20rpx;
+    flex-wrap: wrap; /* 允许在小屏幕上换行 */
+  }
+  
+  .section-title {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10rpx; /* 与日期控件的间距 */
+    width: 100%; /* 独占一行 */
+  }
+  
+  /* 【修正点】日期选择和回到今日按钮对齐优化 */
+  .date-controls {
+    display: flex;
+    align-items: center;
+    width: 100%; /* 占据更多宽度 */
+    justify-content: flex-end; /* 靠右对齐 */
+    margin-top: 10rpx; /* 与标题的间距 */
+  }
+  
+  .date-label {
+    font-size: 26rpx;
+    color: #999;
+    margin-right: 10rpx;
+  }
+  
+  .picker-value {
+    font-size: 30rpx;
+    font-weight: bold;
+    color: #007aff;
+    padding: 5rpx 10rpx; /* 增加点击区域 */
+    border: 1px solid #ddd;
+    border-radius: 8rpx;
+    margin-right: 15rpx; /* 与“回到今日”按钮的间距 */
+    min-width: 200rpx; /* 最小宽度，防止日期过短 */
+    text-align: center;
+  }
+  
+  .today-button {
+    background-color: #07c160;
+    color: #fff;
+    font-size: 30rpx;
+    padding: 8rpx 15rpx;
+    border-radius: 8rpx;
+    height: auto;
+    line-height: normal;
+    margin: 0;
+  }
+  
+  .today-button::after {
+    border: none;
+  }
+  
+  /* 【修正点】业绩速览 Grid 布局优化 */
+  .summary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* 均匀分布卡片 */
+    gap: 15rpx; /* 定义网格项之间的间距 */
+  }
+  
+  .summary-item {
+    width: calc(33.33% - 10rpx); /* 计算宽度，使得一行3个，并且留出gap间距 */
+    padding: 25rpx 0; /* 增加垂直内边距 */
+    text-align: center;
+    border: 1rpx solid #eee;
+    border-radius: 12rpx; /* 稍微大一点的圆角 */
+    box-sizing: border-box;
+    background-color: #fcfcfc;
+    display: flex; /* 让内容也居中 */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* 【优化点】为不同指标的数值设置不同颜色，增加视觉区分度 */
+  .item-value {
+    font-size: 38rpx; /* 稍微大一点的字体 */
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8rpx; /* 增加与标签的间距 */
+    color: #333; /* 默认颜色，具体颜色在下面覆盖 */
+  }
+  .summary-item:nth-child(1) .item-value { color: #f54438; } /* 提成：红色 */
+  .summary-item:nth-child(2) .item-value { color: #e6a23c; } /* 搭赠：橙色 */
+  .summary-item:nth-child(3) .item-value { color: #0ed818; } /* 总件数：蓝色 */
+  .summary-item:nth-child(4) .item-value { color: #256bf7; } /* 陈列费：蓝色 */
+  .summary-item:nth-child(5) .item-value { color: #f56c6c; } /* 旧货：红色 */
+  .summary-item:nth-child(6) .item-value { color: #67c23a; } /* 总订单数：深绿色 */
+  
+  
+  .item-label {
+    font-size: 24rpx;
+    color: #999;
+    display: block;
+  }
+  
+  .add-order-button {
+    width: 100%;
+    height: 90rpx;
+    line-height: 90rpx;
+    background-color: #07c160;
+    color: #fff;
+    font-size: 36rpx;
+    border-radius: 10rpx;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 0;
+    margin-bottom: 30rpx;
+  }
+  .add-order-button::after {
+    border: none;
+    
+  }
+  
+  /* 重点产品售卖区块样式 */
+  .top-products-section {
+    padding: 30rpx;
+  }
+  
+  .product-rank-list {
+    margin-top: 20rpx;
+  }
+  
+  .product-rank-header, .product-rank-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15rpx 0;
+    border-bottom: 1px solid #eee;
+    font-size: 28rpx;
+  }
+  
+  .product-rank-header {
+    font-weight: bold;
+    color: #666;
+    background-color: #f8f8f8;
+    border-top: 1px solid #eee;
+    padding: 20rpx 0;
+  }
+  
+  .product-rank-item {
+    color: #333;
+  }
+  
+  .rank-col-name {
+    flex: 2;
+    text-align: left;
+    padding-left: 10rpx;
+  }
+  
+  .rank-col-qty, .rank-col-stores {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .no-data-message {
+    text-align: center;
+    color: #999;
+    font-size: 28rpx;
+    padding: 30rpx 0;
+  }

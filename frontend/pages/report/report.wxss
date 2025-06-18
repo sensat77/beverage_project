@@ -1,0 +1,86 @@
+/* pages/report/report.wxss */
+.page-container {
+    padding: 20rpx;
+    background-color: #f7f7f7;
+    min-height: 100vh;
+  }
+  .month-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20rpx;
+    margin-bottom: 30rpx;
+    background-color: #fff;
+    border-radius: 12rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  }
+  .picker-value {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #07c160; /* 主题色 */
+    display: flex;
+    align-items: center;
+  }
+  
+  .arrow {
+    margin-left: 10rpx;
+    font-size: 28rpx;
+    color: #07c160;
+  }
+  
+  .section-title {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20rpx;
+    text-align: center;
+    padding-top: 20rpx;
+  }
+
+  .date-selector {
+    background-color: white;
+    padding: 25rpx;
+    text-align: center;
+    border-radius: 16rpx;
+    margin-bottom: 30rpx;
+    font-size: 32rpx;
+    border: 1rpx solid #eee;
+  }
+  .card {
+    background-color: white;
+    border-radius: 16rpx;
+    padding: 30rpx;
+    margin-bottom: 30rpx;
+  }
+  .card-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    margin-bottom: 20rpx;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30rpx;
+  }
+  .summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .summary-item .value {
+    font-size: 40rpx;
+    font-weight: bold;
+    color: #333;
+  }
+  .summary-item .highlight {
+    color: #E64340;
+  }
+  .summary-item .label {
+    font-size: 24rpx;
+    color: #888;
+    margin-top: 10rpx;
+  }
+  .day-row { display: flex; justify-content: space-between; padding: 25rpx 10rpx; border-bottom: 1rpx solid #f0f0f0; }
+.day-row.header { font-weight: bold; color: #555; }
+.day-row .date { font-weight: bold; }
+.day-row:active { background-color: #f7f7f7; }

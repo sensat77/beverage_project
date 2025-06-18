@@ -1,0 +1,65 @@
+/* pages/index/index.wxss */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 150rpx;
+  }
+  
+  .title {
+    font-size: 48rpx;
+    font-weight: bold;
+    margin-bottom: 80rpx;
+  }
+  
+  /* === 请用这个新版本替换旧的 .form-group 和 .input-field 样式 === */
+
+/* 我们把视觉样式（边框、圆角、内边距）都应用在父容器上 */
+.form-group {
+    width: 80%;
+    margin-bottom: 40rpx;
+    border: 1rpx solid #dcdcdc;
+    border-radius: 8rpx;
+    padding: 35rpx; /* 您可以根据需要调整这个值，比如30rpx */
+    background-color: white; /* 确保它有背景色 */
+  }
+  
+  /* 让输入框本身“隐身”，填满父容器 */
+  .input-field {
+    border: none; /* 去掉自己的边框 */
+    padding: 0;   /* 去掉自己的内边距 */
+    width: 100%;
+    height: 100%;
+    min-height: auto; /* 重置最小高度 */
+    font-size: 40rpx; /* 可以适当调整字体大小 */
+  }
+  
+  .login-button {
+    width: 80%;
+    background-color: #07c160;
+    color: white;
+    margin-top: 40rpx;
+  }
+  .nav-text {
+    margin-top: 40rpx;
+    color: #576b95;
+    font-size: 28rpx;
+  }
+  .extra-options {
+    width: 80%;
+    margin-top: 20rpx;
+    font-size: 28rpx;
+    color: #888;
+  }
+ /* === 请将以下新增样式粘贴到 index.wxss 文件末尾 === */
+
+/* 为表单组、按钮和文本链接提升层级，确保能被点击到 */
+.form-group,
+.login-button,
+.extra-options,
+.nav-text {
+  /* z-index 必须配合 position 属性（非static值）使用 */
+  position: relative; 
+  /* 一个较小的正数即可，确保它比任何可能的背景元素层级高 */
+  z-index: 1; 
+}

@@ -1,0 +1,26 @@
+<view class="page-container">
+  <view class="profile-card">
+    <view class="avatar">
+      <image class="avatar-img" src="/assets/avatar.png"></image>
+    </view>
+    <view class="username">{{userInfo.username || '加载中...'}}</view>
+    <view class="reg-date">注册于: {{userInfo.created_at || '...'}}</view>
+  </view>
+
+  <view class="menu-list">
+  <view class="menu-item" bindtap="navigateTo" data-url="/pages/report/report">
+    <text>月度报表</text>
+    <text> > </text>
+  </view>
+  <view class="menu-item" bindtap="navigateTo" data-url="/pages/change_password/change_password">
+    <text>修改密码</text>
+    <text> > </text>
+  </view>
+  <view class="menu-item" bindtap="navigateTo" data-url="/pages/about/about">
+    <text>关于与帮助</text>
+    <text> > </text>
+  </view>
+</view>
+
+  <button class="logout-button" bindtap="logout">退出登录</button>
+</view>

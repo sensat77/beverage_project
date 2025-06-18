@@ -1,0 +1,160 @@
+<view class="container">
+  <view class="date-picker-area">
+    <text class="label">订单日期:</text>
+    <picker mode="date" value="{{selectedDate}}" start="2020-01-01" end="2030-12-31" bindchange="onDateChange">
+      <view class="picker-value">{{selectedDate}}</view>
+    </picker>
+  </view>
+
+  <view class="section textarea-section initial-view"> <textarea
+      class="textarea-input"
+      placeholder="粘贴订单文本，例如：&#10;万利来（元江元）&#10;500阿萨姆2件44.5&#10;1升青梅1件24&#10;5月陈列费150元"
+      bindinput="onTextareaInput"
+      value="{{rawText}}"
+      auto-height
+      placeholder-style="color:#999;"
+      maxlength="-1"
+    ></textarea>
+    <button class="parse-button" bindtap="onParseTap" loading="{{isLoading}}">
+      {{isLoading ? '解析中...' : '智能解析'}}
+    </button>
+  </view>
+
+  <block wx:if="{{parsedData}}">
+    <view class="section parsed-data-section">
+      <view class="section-title">订单详情</view>
+      <view class="data-row">
+        <text class="label">客户名称:</text>
+        <input class="value-input" data-path="parsedData.customer_name" value="{{parsedData.customer_name}}" bindinput="onFieldChange" data-type="text" />
+      </view>
+      <view class="data-row">
+        <text class="label">订单日期:</text>
+        <text class="value-text">{{parsedData.order_date}}</text>
+      </view>
+
+      <view class="section-subtitle product-items-header">
+        <text>产品明细 ({{parsedData.order_items.length || 0}}项)</text>
+        <text class="add-button" bindtap="onAddItemTap">+ 添加</text>
+      </view>
+      <view class="product-list-container">
+        <view wx:if="{{parsedData.order_items.length > 0}}" class="product-item-list">
+          <view wx:for="{{parsedData.order_items}}" wx:key="index" class="product-item">
+            <view class="item-info">
+              <text class="item-name">{{item.product_name}}</text>
+              <view class="item-details">
+                <text>数量: </text><input type="number" class="item-input-small" data-path="parsedData.order_items[{{index}}].quantity" value="{{item.quantity}}" bindinput="onFieldChange" data-type="integer" data-index="{{index}}" />
+                <text>开单价: </text><input type="digit" class="item-input-small" data-path="parsedData.order_items[{{index}}].actual_unit_price" value="{{item.actual_unit_price_str}}" bindinput="onFieldChange" data-type="number" data-index="{{index}}" />
+                <text wx:if="{{item.item_gifting_cost > 0}}">搭赠成本: {{item.item_gifting_cost_str}}</text>
+              </view>
+            </view>
+            <view class="delete-icon" data-index="{{index}}" bindtap="onDeleteItem">×</view>
+          </view>
+        </view>
+        <view wx:else class="no-items">暂无产品项，请手动添加或修正订单文本。</view>
+      </view>
+
+      <view class="data-row">
+        <text class="label">陈列费:</text>
+        <input type="digit" class="value-input" data-path="parsedData.display_fee" value="{{parsedData.display_fee}}" bindinput="onFieldChange" data-type="number" />
+      </view>
+      <view class="data-row">
+        <text class="label">旧货处理费:</text>
+        <input type="digit" class="value-input" data-path="parsedData.old_goods_disposal_fee" value="{{parsedData.old_goods_disposal_fee}}" bindinput="onFieldChange" data-type="number" />
+      </view>
+
+      <view class="data-row">
+        <text class="label">其他费用:</text>
+        <input type="digit" class="value-input" data-path="parsedData.other_expenses" value="{{parsedData.other_expenses}}" bindinput="onFieldChange" data-type="number" />
+      </view>
+
+      <view class="data-row">
+        <text class="label">总件数:</text>
+        <text class="value-text">{{parsedData.total_item_count || 0}}</text>
+      </view>
+      
+
+      <view class="data-row important">
+        <text class="label">总搭赠费用:</text>
+        <text class="value-text">{{parsedData.total_gifting_cost_str || '0.00'}}</text>
+      </view>
+      <view class="data-row important">
+        <text class="label">预估总提成:</text>
+        <text class="value-text">{{parsedData.total_commission_str || '0.00'}}</text>
+      </view>
+      
+    </view>
+
+    <button class="save-button" bindtap="onSaveOrderTap" loading="{{isLoading}}">
+      {{isLoading ? '保存中...' : '确认并保存订单'}}
+    </button>
+  </block>
+
+  <view class="modal-overlay" wx:if="{{showAddModal}}">
+    <view class="modal-content">
+      <view class="modal-title">手动添加产品</view>
+
+      <view class="form-item search-item">
+        <input
+          class="input-field search-input-field {{focusedInput === 'searchProduct' ? 'input-focus' : ''}}"
+          type="text"
+          placeholder="搜索产品名称"
+          bindinput="onSearchInput"
+          bindfocus="onInputFocus"
+          bindblur="onInputBlur"
+          data-field="searchProduct"
+          value="{{searchKeyword}}"
+        />
+        <text wx:if="{{searchKeyword && !selectedProduct}}" class="clear-search" bindtap="clearSearchInput">×</text>
+      </view>
+
+      <scroll-view scroll-y class="search-result-list" wx:if="searchResult.length > 0 && !selectedProduct">
+        <view wx:for="{{searchResult}}" wx:key="id" class="search-result-item" bindtap="onSelectProduct" data-item="{{item}}">
+          <text>{{item.name}} (原价: {{item.unit_price}})</text>
+        </view>
+        <view wx:if="{{searchResult.length === 0 && searchKeyword.length > 0}}" class="no-result">无匹配产品</view>
+      </scroll-view>
+
+      <block wx:if="{{selectedProduct}}">
+        <view class="selected-product-info">
+          <text class="selected-product-name">已选: {{selectedProduct.name}}</text>
+          <text class="selected-product-price">原价: {{selectedProduct.unit_price.toFixed(2)}}</text>
+        </view>
+
+        <view class="form-item">
+          <text class="label">数量</text>
+          <input
+            class="input-field {{focusedInput === 'newItemQuantity' ? 'input-focus' : ''}}"
+            type="number"
+            placeholder="请输入数量"
+            bindinput="onNewItemInput"
+            bindfocus="onInputFocus"
+            bindblur="onInputBlur"
+            data-field="newItemQuantity"
+            value="{{newItemQuantity}}"
+          />
+        </view>
+        <view class="form-item">
+          <text class="label">开单价 (选填)</text>
+          <input
+            class="input-field {{focusedInput === 'newItemPrice' ? 'input-focus' : ''}}"
+            type="digit"
+            placeholder="不填则按原价 {{selectedProduct.unit_price.toFixed(2)}}"
+            bindinput="onNewItemInput"
+            bindfocus="onInputFocus"
+            bindblur="onInputBlur"
+            data-field="newItemPrice"
+            value="{{newItemPrice}}"
+          />
+        </view>
+      </block>
+      <view wx:else class="modal-hint">
+        请搜索并选择要添加的产品。
+      </view>
+
+      <view class="modal-buttons">
+        <button class="modal-button cancel-button" bindtap="closeModal">取消</button>
+        <button class="modal-button confirm-button" bindtap="onNewItemConfirm" disabled="{{!selectedProduct || !newItemQuantity || Number(newItemQuantity) <= 0}}">确认添加</button>
+      </view>
+    </view>
+  </view>
+</view>

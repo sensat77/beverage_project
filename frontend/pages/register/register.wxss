@@ -1,0 +1,74 @@
+/* pages/register/register.wxss */
+.container {
+    padding: 40rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 居中表单项 */
+    min-height: 100vh; /* 确保容器占满屏幕高度 */
+    background-color: #f7f7f7; /* 轻微的背景色 */
+  }
+  
+  .title {
+    font-size: 48rpx;
+    font-weight: bold;
+    margin-bottom: 60rpx;
+    color: #333;
+  }
+  
+  .form-item {
+    width: 100%;
+    max-width: 600rpx; /* 限制表单最大宽度 */
+    margin-bottom: 30rpx;
+    display: flex;
+    flex-direction: column; /* 标签和输入框垂直排列 */
+  }
+  
+  .label {
+    font-size: 28rpx;
+    color: #666;
+    margin-bottom: 10rpx;
+  }
+  
+  /* 核心优化：输入框样式 */
+  .input-field {
+    width: auto; /* 让输入框宽度自适应父容器 */
+    height: 80rpx; /* 增加输入框高度，使其更容易点击 */
+    padding: 0 20rpx; /* 增加内边距，提升视觉和点击区域 */
+    border: 1px solid #ddd; /* 增加边框 */
+    border-radius: 8rpx; /* 圆角 */
+    font-size: 32rpx; /* 字体大小 */
+    color: #333;
+    background-color: #fff; /* 白色背景 */
+    box-sizing: border-box; /* 边框和内边距包含在宽度内 */
+    -webkit-appearance: none; /* 移除默认样式 */
+    appearance: none;
+  }
+  
+  /* 获得焦点时的样式 */
+  .input-field.input-focus {
+    border-color: #007aff; /* 聚焦时边框颜色变化 */
+    box-shadow: 0 0 0 2rpx rgba(0, 122, 255, 0.2); /* 聚焦时阴影 */
+  }
+  
+  
+  .register-button {
+    width: 80%;
+    background-color: #07c160;
+    color: white;
+    margin-top: 40rpx;
+  }
+  
+  .register-button::after {
+    border: none; /* 移除按钮默认边框 */
+  }
+  
+  .login-link {
+    font-size: 28rpx;
+    color: #999;
+    margin-top: 300rpx;
+  }
+  
+  .login-link text {
+    color: #007aff;
+    text-decoration: underline;
+  }

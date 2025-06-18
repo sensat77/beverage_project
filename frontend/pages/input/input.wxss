@@ -1,0 +1,406 @@
+/* pages/input/input.wxss (优化初始界面布局) */
+.container {
+  padding: 30rpx;
+  background-color: #f7f7f7;
+  min-height: 100vh; /* 确保容器高度占满屏幕 */
+  box-sizing: border-box;
+  display: flex; /* 【修正点】使用弹性布局 */
+  flex-direction: column; /* 【修正点】垂直排列子元素 */
+ /* margin: auto;*/
+}
+
+.date-picker-area {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 10rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  flex-shrink: 0; /* 确保日期选择区域不被压缩 */
+}
+
+.date-picker-area .label {
+  font-size: 30rpx;
+  color: #333;
+  margin-right: 20rpx;
+}
+
+.picker-value {
+  font-size: 30rpx;
+  color: #007aff;
+  font-weight: bold;
+}
+
+.section {
+  background-color: #fff;
+  padding: 30rpx;
+  border-radius: 10rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  flex-shrink: 0; /* 默认不收缩 */
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+/* 【修正点】初始/未解析状态的布局调整，使其在屏幕中间 */
+.textarea-section.initial-view {
+  flex-grow: 1; /* 【新增】占据剩余空间，让内容可以居中 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* 【新增】垂直居中内容 */
+  align-items: center; /* 【新增】水平居中内容 */
+  padding: 50rpx; /* 增加内边距 */
+  margin-top: 0; /* 【修正】不需要 auto，由 justify-content 控制 */
+  margin-bottom: 0; /* 【修正】不需要 auto，由 justify-content 控制 */
+}
+
+.textarea-input {
+  width: 100%; /* 宽度占满父容器 */
+  min-height: 250rpx; /* 增加高度，提供更多输入空间 */
+  height: auto; /* 自动高度 */
+  padding: 20rpx;
+  border: 1px solid #eee;
+  border-radius: 8rpx;
+  font-size: 30rpx;
+  line-height: 1.5;
+  margin-bottom: 30rpx; /* 增加与按钮的间距 */
+  box-sizing: border-box;
+  background-color: #fafafa;
+  text-align: left; /* 文本左对齐 */
+}
+
+.parse-button, .save-button {
+  width: 100%;
+  height: 90rpx;
+  line-height: 90rpx; /* 确保文字垂直居中 */
+  background-color: #07c160;
+  color: #fff;
+  font-size: 36rpx;
+  border-radius: 10rpx;
+  text-align: center; /* 确保文字水平居中 */
+  margin-top: 0;
+  display: block;
+}
+
+.parse-button::after, .save-button::after {
+  border: none;
+}
+
+/* 解析结果区样式 (当 parsedData 存在时，此区域显示) */
+.parsed-data-section {
+  padding: 30rpx;
+  flex-grow: 1; /* 【新增】占据剩余空间 */
+}
+
+.data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 0;
+  border-bottom: 1px solid #eee;
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-row .label {
+  font-size: 28rpx;
+  color: #666;
+  flex-shrink: 0;
+  margin-right: 20rpx;
+}
+
+.data-row .value-text {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: bold;
+  text-align: right;
+  flex-grow: 1;
+}
+
+.value-input {
+  flex-grow: 1;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: right;
+  font-size: 30rpx;
+  color: #007aff;
+  border: 1px solid transparent;
+  border-radius: 5rpx;
+  padding: 0 5rpx;
+}
+
+.value-input.input-focus {
+  border-color: #007aff;
+  background-color: #f0f8ff;
+}
+
+.product-items-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  padding-bottom: 10rpx;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20rpx;
+}
+
+.product-items-header .add-button {
+  color: #007aff;
+  font-size: 28rpx;
+  font-weight: normal;
+  padding: 10rpx 20rpx;
+  background-color: #e6f7ff;
+  border-radius: 20rpx;
+}
+
+.product-list-container {
+  max-height: 400rpx;
+  overflow-y: auto;
+  margin-bottom: 20rpx;
+}
+
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f8f8;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  margin-bottom: 15rpx;
+  box-shadow: 0 1rpx 5rpx rgba(0, 0, 0, 0.03);
+}
+
+.product-item .item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-item .item-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.product-item .item-details {
+  font-size: 26rpx;
+  color: #777;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.product-item .item-details text {
+  margin-right: 15rpx;
+  flex-shrink: 0;
+}
+
+.item-input-small {
+  width: 120rpx;
+  height: 55rpx;
+  line-height: 55rpx;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 5rpx;
+  font-size: 28rpx;
+  padding: 0 5rpx;
+  margin: 0 10rpx;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.delete-icon {
+  font-size: 40rpx;
+  color: #ff4d4f;
+  margin-left: 20rpx;
+  font-weight: lighter;
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 35rpx;
+  text-align: center;
+  border: 1rpx solid #ff4d4f;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.no-items {
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+  padding: 30rpx 0;
+}
+
+.important .value-text {
+  color: #ff4d4f;
+}
+
+/* ============================ 模态框样式 (保持不变) ============================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 16rpx;
+  width: 85%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+.modal-title {
+  font-size: 38rpx;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 30rpx;
+  color: #333;
+}
+
+.form-item {
+  width: 100%;
+  margin-bottom: 20rpx;
+}
+
+.form-item .label {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+  display: block;
+}
+
+.input-field {
+  width: auto;
+  height: 80rpx;
+  padding: 0 20rpx;
+  border: 1px solid #ddd;
+  border-radius: 8rpx;
+  font-size: 32rpx;
+  color: #333;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.input-field.input-focus {
+  border-color: #007aff;
+  box-shadow: 0 0 0 2rpx rgba(0, 122, 255, 0.2);
+}
+
+.search-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-field {
+  width: calc(100% - 60rpx);
+}
+
+.clear-search {
+  position: absolute;
+  right: 15rpx;
+  font-size: 36rpx;
+  color: #999;
+  width: 50rpx;
+  height: 50rpx;
+  line-height: 45rpx;
+  text-align: center;
+}
+
+.search-result-list {
+  max-height: 300rpx;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8rpx;
+  margin-bottom: 20rpx;
+  background-color: #fcfcfc;
+}
+
+.search-result-item {
+  padding: 20rpx;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:active {
+  background-color: #f0f0f0;
+}
+
+.no-result, .modal-hint {
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+  padding: 20rpx 0;
+}
+
+.selected-product-info {
+  background-color: #e6f7ff;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  margin-bottom: 30rpx;
+  text-align: center;
+  font-size: 30rpx;
+  color: #007aff;
+  font-weight: bold;
+}
+.selected-product-price {
+    margin-left: 20rpx;
+    color: #666;
+    font-weight: normal;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 40rpx;
+}
+
+.modal-button {
+  flex: 1;
+  height: 90rpx;
+  line-height: 90rpx;
+  font-size: 34rpx;
+  border-radius: 10rpx;
+  margin: 0 10rpx;
+}
+
+.cancel-button {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.confirm-button {
+  background-color: #07c160;
+  color: #fff;
+}
+
+.confirm-button[disabled] {
+    background-color: #a0a0a0;
+    color: #eee;
+}

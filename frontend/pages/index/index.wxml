@@ -1,0 +1,27 @@
+<view class="container">
+  <view class="title">欢迎登录</view>
+
+  <view class="form-group">
+    <input class="input-field" 
+           placeholder="请输入用户名" 
+           value="{{username}}" 
+           bindinput="onUsernameInput" />
+  </view>
+
+  <view class="form-group">
+    <input class="input-field" 
+           type="password"
+           placeholder="请输入密码" 
+           value="{{password}}"
+           bindinput="onPasswordInput" />
+  </view>
+  <view class="extra-options">
+  <checkbox-group bindchange="onRememberMeChange">
+    <label class="checkbox">
+      <checkbox value="true" checked="{{rememberMe}}"/>记住账号密码
+    </label>
+  </checkbox-group>
+</view>
+  <button class="login-button" bindtap="onLoginTap">登 录</button>
+  <text class="nav-text" bind:tap="goToRegister">没有账号？立即注册</text>
+</view>

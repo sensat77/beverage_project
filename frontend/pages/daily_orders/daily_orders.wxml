@@ -1,0 +1,20 @@
+<view class="page-container">
+  <block wx:if="{{orderList.length > 0}}">
+    <view class="order-item" wx:for="{{orderList}}" wx:key="id">
+      <view class="info-section" bind:tap="onOrderTap" data-orderid="{{item.id}}">
+        <view class="customer-name">{{item.customer_name}}</view>
+        <view class="details">
+          <text>件数: {{item.total_item_count}}</text>
+          <text class="commission">提成: ¥{{item.total_commission_str}}</text>
+        </view>
+      </view>
+      <view class="action-section">
+        <button class="delete-btn" size="mini" type="warn" 
+                bind:tap="onDeleteOrder" data-orderid="{{item.id}}" data-index="{{index}}">删除</button>
+      </view>
+    </view>
+  </block>
+  <view class="no-data" wx:else>
+    {{ isLoading ? '加载中...' : '该日无订单记录' }}
+  </view>
+</view>

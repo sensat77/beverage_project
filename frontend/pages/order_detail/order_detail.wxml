@@ -1,0 +1,51 @@
+<view class="page-container" wx:if="{{orderDetail}}">
+  <view class="card">
+    <view class="header">
+      <view class="customer-name">{{orderDetail.customer_name}}</view>
+      <view class="order-date">{{orderDetail.order_date}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">订单产品</view>
+    <view class="item-row header">
+      <text class="name">产品名称</text>
+      <text class="qty">数量</text>
+      <text class="price">单价</text>
+      <text class="total">提成</text> </view>
+    <view class="item-row" wx:for="{{orderDetail.items}}" wx:key="index">
+      <text class="name">{{item.product_name}}</text>
+      <text class="qty">{{item.quantity}}</text>
+      <text class="price">¥{{item.actual_unit_price_str}}</text>
+      <text class="total highlight">¥{{item.item_commission_str}}</text> </view>
+  </view>
+
+  <view class="card">
+  <view class="card-title">总计</view>
+  <view class="summary-row">
+    <text>总件数</text>
+    <text>{{orderDetail.total_item_count}}</text>
+  </view>
+  <view class="summary-row">
+    <text>总提成</text>
+    <text class="highlight">¥ {{orderDetail.total_commission_str}}</text>
+  </view>
+  <view class="summary-row">
+    <text>总陈列费</text>
+    <text>¥ {{orderDetail.display_fee_str}}</text>
+  </view>
+  <view class="summary-row">
+    <text>总旧货</text>
+    <text>¥ {{orderDetail.old_goods_disposal_fee_str}}</text>
+  </view>
+  <view class="summary-row">
+    <text>总搭赠</text>
+    <text>¥ {{orderDetail.gifting_cost_str}}</text>
+  </view>
+</view>
+
+  <view class="card" wx:if="{{orderDetail.original_text}}">
+    <view class="card-title">原始订单文本</view>
+    <text class="original-text" user-select="true">{{orderDetail.original_text}}</text>
+  </view>
+</view>

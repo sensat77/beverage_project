@@ -1,0 +1,65 @@
+<view class="container">
+  <view class="welcome-card">
+    <text class="welcome-text">欢迎您，{{userInfo.username || '用户'}}</text>
+  </view>
+
+  <view class="section performance-summary">
+    <view class="section-header">
+      <text class="section-title">业绩速览</text>
+      <view class="date-controls">
+        <text class="date-label">当前查看日期:</text>
+        <picker mode="date" value="{{selectedDate}}" start="2020-01-01" end="2030-12-31" bindchange="onDateChange">
+          <view class="picker-value">{{selectedDate}}</view>
+        </picker>
+        <button class="today-button" bindtap="goToToday">回到今日</button>
+      </view>
+    </view>
+    <view class="summary-grid">
+      <view class="summary-item">
+        <text class="item-value">{{summaryData.total_commission_str || '0.00'}}</text>
+        <text class="item-label">预估总提成 (元)</text>
+      </view>
+      <view class="summary-item">
+        <text class="item-value">{{summaryData.total_gifting_cost_str || '0.00'}}</text>
+        <text class="item-label">总搭赠 (元)</text>
+      </view>
+      <view class="summary-item">
+        <text class="item-value">{{summaryData.total_item_count || 0}}</text>
+        <text class="item-label">总件数</text>
+      </view>
+      <view class="summary-item">
+        <text class="item-value">{{summaryData.total_display_fee_str || '0.00'}}</text>
+        <text class="item-label">总陈列费 (元)</text>
+      </view>
+      <view class="summary-item">
+        <text class="item-value">{{summaryData.total_old_goods_disposal_fee_str || '0.00'}}</text>
+        <text class="item-label">总旧货 (元)</text>
+      </view>
+      <view class="summary-item">
+        <text class="item-value">{{summaryData.total_order_count || 0}}</text>
+        <text class="item-label">总订单数</text>
+      </view>
+    </view>
+  </view>
+
+  <button class="add-order-button" bindtap="goToInputPage">录入新订单</button>
+
+  <view class="section top-products-section" wx:if="{{topProductsSales.length > 0}}">
+    <view class="section-title">重点产品售卖 (件数/家数)</view>
+    <view class="product-rank-list">
+      <view class="product-rank-header">
+        <text class="rank-col-name">产品名称</text>
+        <text class="rank-col-qty">件数</text>
+        <text class="rank-col-stores">家数</text>
+      </view>
+      <view wx:for="{{topProductsSales}}" wx:key="product_name" class="product-rank-item">
+        <text class="rank-col-name">{{item.product_name}}</text>
+        <text class="rank-col-qty">{{item.total_quantity}}</text>
+        <text class="rank-col-stores">{{item.customer_count}}</text>
+      </view>
+    </view>
+  </view>
+  <view class="section no-data-message" wx:else>
+    <text>暂无重点产品售卖数据。</text>
+  </view>
+</view>
