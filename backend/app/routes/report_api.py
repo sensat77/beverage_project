@@ -1,8 +1,8 @@
-# /backend/app/routes/report_api.py (功能完整版)
+# backend/app/routes/report_api.py
 
 from flask import Blueprint, request, jsonify
 from sqlalchemy import func, extract, distinct
-from datetime import datetime
+from datetime import datetime, timedelta # 新增导入 timedelta
 from app.extensions import db
 from app.models.order import Order, OrderItem
 from .auth_decorator import token_required
@@ -58,8 +58,7 @@ def get_orders_by_date(current_user):
         })
     return jsonify(order_list)
 
-# --- 【缺失的功能】请确保您的文件中有下面这个删除订单的函数 ---
-# API 3: 删除一个订单
+# API 3: 删除一个订单 (保持不变)
 @report_bp.route('/order/<int:order_id>', methods=['DELETE'])
 @token_required
 def delete_order(current_user, order_id):
@@ -74,14 +73,17 @@ def delete_order(current_user, order_id):
 def get_top_product_sales(current_user):
     date_str = request.args.get('date')
     try:
+        # 如果提供了日期，使用该日期；否则使用今天的日期
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date()
     except ValueError:
-        return jsonify([]) # 日期格式错误返回空列表
+        return jsonify({"code": 400, "message": "日期格式不正确"}), 400 # 日期格式错误返回错误信息
 
-    # 查询逻辑：按产品名称分组，统计总件数和涉及的客户家数
-    top_products = db.session.query(
+    yesterday = target_date - timedelta(days=1) # 计算昨日日期
+
+    # 查询今日重点产品销售数据
+    today_top_products_query = db.session.query(
         OrderItem.product_name,
-        func.sum(OrderItem.quantity).label('total_quantity'),
+        func.sum(OrderItem.quantity).label('sales_count'),
         func.count(distinct(Order.customer_name)).label('customer_count') # 统计去重后的客户名称数量
     ).join(Order, Order.id == OrderItem.order_id)\
      .filter(Order.user_id == current_user.id, Order.order_date == target_date)\
@@ -90,13 +92,53 @@ def get_top_product_sales(current_user):
      .limit(5)\
      .all()
     
-    # 转换为字典列表
+    # 将今日数据转换为字典，方便查找
+    today_products_map = {}
+    for p in today_top_products_query:
+        today_products_map[p.product_name] = {
+            'sales_count': int(p.sales_count or 0),
+            'customer_count': int(p.customer_count or 0)
+        }
+
+    # 查询昨日重点产品销售数据 (只查询今日重点产品中包含的产品，减少查询量)
+    yesterday_sales_map = {}
+    if today_products_map: # 如果今日有重点产品
+        yesterday_top_products_query = db.session.query(
+            OrderItem.product_name,
+            func.sum(OrderItem.quantity).label('sales_count')
+        ).join(Order, Order.id == OrderItem.order_id)\
+         .filter(
+            Order.user_id == current_user.id,
+            Order.order_date == yesterday,
+            OrderItem.product_name.in_(list(today_products_map.keys())) # 只查询今日重点产品中包含的产品
+         ).group_by(OrderItem.product_name).all()
+
+        for item in yesterday_top_products_query:
+            yesterday_sales_map[item.product_name] = int(item.sales_count or 0)
+
     result_list = []
-    for p in top_products:
+    # 遍历今日重点产品，加入昨日销量和日环比
+    for product_name, data in today_products_map.items():
+        sales_count = data['sales_count']
+        customer_count = data['customer_count']
+        
+        last_day_sales_count = yesterday_sales_map.get(product_name, 0)
+        
+        sales_change_percentage = 0.0
+        if last_day_sales_count > 0:
+            sales_change_percentage = ((sales_count - last_day_sales_count) / last_day_sales_count) * 100
+        elif sales_count > 0: # 今日有销售但昨日无销售，视为大幅增长
+            sales_change_percentage = 100.0 # 可以根据实际业务定义
+        else: # 今日昨日都无销售
+            sales_change_percentage = 0.0
+
         result_list.append({
-            'product_name': p.product_name,
-            'total_quantity': int(p.total_quantity or 0), # 确保是整数
-            'customer_count': int(p.customer_count or 0) # 确保是整数
+            'product_name': product_name,
+            'total_quantity': sales_count, # 保持 total_quantity 字段名与前端现有使用一致
+            'customer_count': customer_count,
+            'last_day_total_quantity': last_day_sales_count, # 新增字段：昨日总件数
+            'daily_change_percentage': round(sales_change_percentage, 2) # 新增字段：日环比百分比
         })
     
-    return jsonify(result_list)
+    # 返回统一的 success/data/message 格式
+    return jsonify({"code": 200, "message": "重点产品数据获取成功", "data": result_list})
