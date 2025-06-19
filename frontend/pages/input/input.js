@@ -207,6 +207,7 @@ Page({
   },
 
   async onSaveOrderTap() {
+    console.log("onSaveOrderTap 函数被触发！"); // <--- 添加这行代码
     if (!this.data.parsedData || !this.data.parsedData.order_items || this.data.parsedData.order_items.length === 0) {
       wx.showToast({ title: '这是一个无效订单，至少需要包含一个产品！', icon: 'none' });
       return;
@@ -226,6 +227,7 @@ Page({
       display_fee: Number(this.data.parsedData.display_fee || 0),
       old_goods_disposal_fee: Number(this.data.parsedData.old_goods_disposal_fee || 0),
       gifting_cost: Number(this.data.parsedData.total_gifting_cost || 0),
+      total_gifting_cost: Number(this.data.parsedData.total_gifting_cost || 0),
       other_expenses: Number(this.data.parsedData.other_expenses || 0)
     };
     try {

@@ -30,6 +30,7 @@ def parse_order_endpoint(current_user):
 @token_required
 def save_order_endpoint(current_user):
     data = request.get_json()
+    print(f"后端接收到的原始数据: {data}") # <--- 【新增】打印整个接收到的数据
     # 【后端验证】如果请求数据为空，或者产品列表为空
     if not data or not data.get('order_items'):
         return jsonify({"code": 400, "message": "无效订单，必须包含产品项"}), 400
@@ -101,13 +102,13 @@ def save_order_endpoint(current_user):
 
         # --- 4. 提交事务，将所有数据写入数据库 ---
         db.session.commit()
-
+        print("数据库事务提交成功！") # <--- 【新增】打印提交成功
         return jsonify({'message': '订单保存成功', 'order_id': new_order.id}), 201
 
     except Exception as e:
         db.session.rollback()
         # 打印详细错误到控制台，方便调试
-        print(f"Error occurred: {e}") 
+        print(f"Error occurred during save_order: {e}")
         return jsonify({'message': '保存失败，服务器内部错误', 'error': str(e)}), 500
     
 

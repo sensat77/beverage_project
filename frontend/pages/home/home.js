@@ -16,10 +16,16 @@ Page({
     isLoading: true,
     selectedDate: formatDate(new Date()), // 默认选中今天
 
-    topProductsSales: [] // 【新增】重点产品销售数据
+    topProductsSales: [],
+    selectedBarcodes: [], // 用户选择展示的条码
+    allBarcodes: [], // 所有可选条码（接口返回或本地维护）
+    showBarcodeSelector: false, // 控制弹窗显示
+    tempSelectedBarcodes: [] // 临时选择
   },
 
   onShow: function () {
+    const selectedBarcodes = wx.getStorageSync('selectedBarcodes') || [];
+    this.setData({ selectedBarcodes });
     this.fetchData();
   },
 
@@ -65,7 +71,7 @@ Page({
         requestWithAuth({ url: `/api/reports/top_product_sales?date=${date}` }) 
       ]);
   
-      // --- 预格式化 “速览” 卡片中的金额 ---
+      // --- 预格式化 "速览" 卡片中的金额 ---
       if (summaryRes) {
         summaryRes.total_commission_str = (summaryRes.total_commission || 0).toFixed(2);
         summaryRes.total_gifting_cost_str = (summaryRes.total_gifting_cost || 0).toFixed(2);
@@ -73,11 +79,25 @@ Page({
         summaryRes.total_old_goods_disposal_fee_str = (summaryRes.total_old_goods_disposal_fee || 0).toFixed(2);
       }
   
+      // 获取所有可选条码
+      const allBarcodes = topProductsRes.map(item => ({
+        barcode: item.barcode,
+        name: item.product_name
+      }));
+      // 如果没选过，默认展示全部
+      let selectedBarcodes = this.data.selectedBarcodes;
+      if (!selectedBarcodes || selectedBarcodes.length === 0) {
+        selectedBarcodes = allBarcodes.map(item => item.barcode);
+        wx.setStorageSync('selectedBarcodes', selectedBarcodes);
+      }
+  
       this.setData({
         summaryData: summaryRes,
         // orderList: [], // 【删除】清空 orderList 数据
         userInfo: profileRes, 
         topProductsSales: topProductsRes, // 【新增】设置重点产品销售数据
+        allBarcodes,
+        selectedBarcodes,
         isLoading: false
       });
   
@@ -101,6 +121,31 @@ Page({
   goToInputPage: function () {
     wx.navigateTo({
       url: '/pages/input/input'
+    });
+  },
+
+  // 打开选择条码弹窗
+  openBarcodeSelector() {
+    this.setData({
+      showBarcodeSelector: true,
+      tempSelectedBarcodes: [...this.data.selectedBarcodes]
+    });
+  },
+  // 关闭弹窗
+  closeBarcodeSelector() {
+    this.setData({ showBarcodeSelector: false });
+  },
+  // 多选切换
+  onBarcodeCheckboxChange(e) {
+    this.setData({ tempSelectedBarcodes: e.detail.value });
+  },
+  // 确认选择
+  confirmBarcodeSelection() {
+    const selectedBarcodes = this.data.tempSelectedBarcodes;
+    wx.setStorageSync('selectedBarcodes', selectedBarcodes);
+    this.setData({
+      selectedBarcodes,
+      showBarcodeSelector: false
     });
   }
 })
