@@ -1,4 +1,4 @@
-// pages/home/home.js (修正版)
+// pages/home/home.js (移除“不展示任何产品”选项)
 import { requestWithAuth } from '../../utils/api.js';
 
 const formatDate = date => {
@@ -16,21 +16,20 @@ Page({
     selectedDate: formatDate(new Date()), // 默认选中今天
 
     topProductsSales: [], // 重点产品销售数据
-    // 以下是与重点产品优化无关的，保持原样
-    selectedBarcodes: [], 
-    allBarcodes: [],
-    showBarcodeSelector: false, 
-    tempSelectedBarcodes: [] 
+    
+    // 用于自主选择重点产品的功能
+    showProductSelector: false, // 控制选择产品弹窗显示
+    allAvailableProducts: [], // 所有可供选择的产品名称列表
+    tempSelectedProducts: [], // 临时存储用户在弹窗中的选择
+    currentSelectedProducts: [], // 用户当前已保存的重点产品列表（后端返回的）
   },
 
   onShow: function () {
-    const selectedBarcodes = wx.getStorageSync('selectedBarcodes') || [];
-    this.setData({ selectedBarcodes });
     this.fetchData();
   },
 
   onPullDownRefresh: function () {
-    this.fetchData(); // 下拉刷新时重新获取所有数据
+    this.fetchData(); 
   },
 
   onDateChange: function (e) {
@@ -54,7 +53,7 @@ Page({
         title: '已是今日',
         icon: 'none'
       });
-      this.fetchData(); // 强制刷新
+      this.fetchData(); 
     }
   },
 
@@ -63,15 +62,13 @@ Page({
     const date = this.data.selectedDate;
   
     try {
-      // 同时请求 daily_summary, profile, 和 top_product_sales
-      const [summaryRes, profileRes, topProductsResWrapper] = await Promise.all([
+      const [summaryRes, profileRes, topProductsResWrapper, allProductsResWrapper] = await Promise.all([
         requestWithAuth({ url: `/api/daily_summary?date=${date}` }),
         requestWithAuth({ url: '/api/profile' }),
-        // 调用获取重点产品销售数据的新接口
-        requestWithAuth({ url: `/api/reports/top_product_sales?date=${date}` }) 
+        requestWithAuth({ url: `/api/reports/top_product_sales?date=${date}` }), 
+        requestWithAuth({ url: '/api/products/names' }) // 获取所有产品名称列表
       ]);
-  
-      // --- 预格式化 "速览" 卡片中的金额 ---
+      
       if (summaryRes) {
         summaryRes.total_commission_str = (summaryRes.total_commission || 0).toFixed(2);
         summaryRes.total_gifting_cost_str = (summaryRes.total_gifting_cost || 0).toFixed(2);
@@ -79,39 +76,50 @@ Page({
         summaryRes.total_old_goods_disposal_fee_str = (summaryRes.total_old_goods_disposal_fee || 0).toFixed(2);
       }
 
-      // 处理 topProductsResWrapper (后端统一返回格式 {code, message, data})
       let topProductsData = [];
       if (topProductsResWrapper && topProductsResWrapper.code === 200) {
         topProductsData = topProductsResWrapper.data || [];
       } else {
-        console.error("获取重点产品数据失败:", topProductsResWrapper.message);
-        // 这里可以根据需要给出特定提示，但避免覆盖通用网络错误
+        console.error("获取重点产品销售数据失败:", topProductsResWrapper.message);
       }
-  
-      // 获取所有可选条码（这部分逻辑与重点产品优化无关，保持原样）
-      const allBarcodes = topProductsData.map(item => ({ // 使用 topProductsData
-        // 假设 item 中有 barcode 字段，如果没有，需要从产品表中获取或前端自行维护
-        // 如果后端没有返回 barcode，这里可能需要调整或移除
-        // barcode: item.barcode, 
-        name: item.product_name
-      }));
-      // 如果没选过，默认展示全部
-      let selectedBarcodes = this.data.selectedBarcodes;
-      if (!selectedBarcodes || selectedBarcodes.length === 0) {
-        // selectedBarcodes = allBarcodes.map(item => item.barcode); // 如果没有barcode，则无法映射
-        // wx.setStorageSync('selectedBarcodes', selectedBarcodes);
-        // 为了避免没有barcode字段报错，这里可以简单地设置为所有产品名称，如果不需要过滤，这部分也可移除
+
+      let allProductNames = [];
+      if (allProductsResWrapper && allProductsResWrapper.code === 200) {
+        allProductNames = allProductsResWrapper.data || [];
+      } else {
+        console.error("获取所有产品名称失败:", allProductsResWrapper.message);
       }
-  
+
+      const currentSelectedProductsFromAPI = topProductsData.map(item => item.product_name);
+      
+      // 如果当前没有设置任何重点产品，但allProductNames不为空，可以设置一个默认值
+      // 如果需要默认选择您上次指定的“焕神”等产品，可以在这里设置
+      if (currentSelectedProductsFromAPI.length === 0 && allProductNames.length > 0) {
+        const defaultProducts = ["焕神", "海之言", "双萃", "绿茶", "茉莉奶绿", "春拂焙茶"];
+        const validDefaultProducts = defaultProducts.filter(name => allProductNames.includes(name));
+        if(validDefaultProducts.length > 0) {
+          await requestWithAuth({
+            url: '/api/reports/save_selected_products',
+            method: 'POST',
+            data: { product_names: validDefaultProducts }
+          });
+          const reFetchTopProductsResWrapper = await requestWithAuth({ url: `/api/reports/top_product_sales?date=${date}` });
+          if(reFetchTopProductsResWrapper && reFetchTopProductsResWrapper.code === 200) {
+            topProductsData = reFetchTopProductsResWrapper.data || [];
+          }
+          currentSelectedProductsFromAPI.splice(0, currentSelectedProductsFromAPI.length, ...validDefaultProducts);
+        }
+      }
+
       this.setData({
         summaryData: summaryRes,
         userInfo: profileRes, 
-        topProductsSales: topProductsData, // 更新为后端返回的重点产品数据
-        allBarcodes, // 这部分依赖于后端返回的 barcode 字段，如果后端不返回，前端需要调整
-        selectedBarcodes,
+        topProductsSales: topProductsData, 
+        allAvailableProducts: allProductNames, 
+        currentSelectedProducts: currentSelectedProductsFromAPI, 
         isLoading: false
       });
-  
+      
     } catch (error) {
       console.error("获取首页数据失败:", error);
       wx.showToast({ title: '数据加载失败', icon: 'none' });
@@ -121,42 +129,85 @@ Page({
     }
   },
 
-  // 【删除】onOrderTap 函数，因为不再显示最近订单 (这部分代码之前已经建议删除了，确保它仍然被删除)
-  // onOrderTap: function(e) {
-  //   const orderId = e.currentTarget.dataset.orderid;
-  //   wx.navigateTo({
-  //     url: `/pages/order_detail/order_detail?id=${orderId}`
-  //   });
-  // },
-
   goToInputPage: function () {
     wx.navigateTo({
       url: '/pages/input/input'
     });
   },
 
-  // 打开选择条码弹窗 (保持不变，但其功能性依赖于 `allBarcodes` 的数据结构)
-  openBarcodeSelector() {
+  openProductSelector() {
     this.setData({
-      showBarcodeSelector: true,
-      tempSelectedBarcodes: [...this.data.selectedBarcodes]
+      showProductSelector: true,
+      // 初始化tempSelectedProducts为当前已选产品
+      tempSelectedProducts: [...this.data.currentSelectedProducts]
     });
   },
-  // 关闭弹窗 (保持不变)
-  closeBarcodeSelector() {
-    this.setData({ showBarcodeSelector: false });
+
+  closeProductSelector() {
+    this.setData({ showProductSelector: false });
   },
-  // 多选切换 (保持不变)
-  onBarcodeCheckboxChange(e) {
-    this.setData({ tempSelectedBarcodes: e.detail.value });
-  },
-  // 确认选择 (保持不变)
-  confirmBarcodeSelection() {
-    const selectedBarcodes = this.data.tempSelectedBarcodes;
-    wx.setStorageSync('selectedBarcodes', selectedBarcodes);
+
+  // 【移除 onProductCheckboxChange】
+  // onProductCheckboxChange(e) {
+  //   this.setData({ tempSelectedProducts: [...e.detail.value] }); 
+  // },
+
+  // 【新增/修改】手动处理单个产品选择的 tap 事件
+  onProductItemTap: function(e) {
+    const product = e.currentTarget.dataset.product; // 获取当前点击的产品名称
+    let currentTempSelectedProducts = [...this.data.tempSelectedProducts]; // 复制一份当前选中列表
+
+    const index = currentTempSelectedProducts.indexOf(product);
+    if (index > -1) {
+      // 如果已选中，则移除
+      currentTempSelectedProducts.splice(index, 1);
+    } else {
+      // 如果未选中，则添加
+      currentTempSelectedProducts.push(product);
+    }
+
     this.setData({
-      selectedBarcodes,
-      showBarcodeSelector: false
+      tempSelectedProducts: currentTempSelectedProducts // 更新数据，这将驱动 checkbox 的 checked 属性
+    }, () => {
+      // 可选：在回调中打印，确认数据已更新
+      // console.log("tempSelectedProducts after tap:", this.data.tempSelectedProducts);
     });
-  }
+  },
+
+  confirmProductSelection: async function() {
+    const selectedProducts = this.data.tempSelectedProducts;
+    const finalSelection = selectedProducts; 
+
+    try {
+        const res = await requestWithAuth({
+            url: '/api/reports/save_selected_products',
+            method: 'POST',
+            data: { product_names: finalSelection }
+        });
+
+        if (res && res.code === 200) {
+            wx.showToast({ title: '重点产品设置成功', icon: 'success' });
+            this.setData({
+                currentSelectedProducts: finalSelection, 
+                showProductSelector: false 
+            });
+            this.fetchData(); 
+        } else {
+            wx.showToast({ title: res.message || '保存失败', icon: 'none' });
+        }
+    } catch (error) {
+        console.error("保存重点产品失败:", error);
+        wx.showToast({ title: '网络错误，保存失败', icon: 'none' });
+    }
+  },
+
+  navigateToDailyOrders: function() {
+    wx.navigateTo({ url: '/pages/daily_orders/daily_orders' });
+  },
+  navigateToReport: function() {
+    wx.navigateTo({ url: '/pages/report/report' });
+  },
+  navigateToProfile: function() {
+    wx.navigateTo({ url: '/pages/profile/profile' });
+  },
 })

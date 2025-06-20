@@ -1,335 +1,344 @@
-/* pages/home/home.wxss (业绩速览布局调整版) */ 
+/* pages/home/home.wxss (业绩速览布局调整版) */
 .container {
     padding: 30rpx;
     background-color: #f7f7f7;
     min-height: 100vh;
-    box-sizing: border-box; 
-  }
+    box-sizing: border-box;
+}
   
-  .welcome-card {
+.welcome-card {
     background-color: #07c160;
     padding: 40rpx;
     border-radius: 20rpx;
     margin-bottom: 30rpx;
     text-align: center;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08); 
-  }
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
   
-  .welcome-text {
+.welcome-text {
     font-size: 38rpx;
     font-weight: bold;
-    color: #fff; 
-  }
+    color: #fff;
+}
   
-  .section {
+.section {
     margin: 20rpx 0;
     background: #fff;
     border-radius: 16rpx;
-    padding: 20rpx; 
-  }
+    padding: 20rpx;
+}
   
-  .section-header {
+.section-header {
     display: flex;
     justify-content: space-between;
-    align-items: center; 
-  }
+    align-items: center;
+}
   
-  .section-title {
+.section-title {
     font-weight: bold;
-    font-size: 32rpx; 
-  }
+    font-size: 32rpx;
+}
   
-  .setting-btn {
-    font-size: 24rpx;
-    padding: 0 16rpx; 
-  }
-  
-  .card-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20rpx;
-    margin-top: 20rpx; 
-  }
-  
-  /* 移除原有的 product-card 和 product-info 样式，因为被新样式替代 */
-  /*
-  .product-card {
-    width: 30%;
-    min-width: 180rpx;
-    background: #f7f8fa;
+/* 修改 setting-btn 样式以适应新的布局 */
+.setting-btn {
+    font-size: 26rpx; /* 稍微大一点 */
+    padding: 8rpx 20rpx;
+    background-color: #007bff; /* 蓝色按钮 */
+    color: #fff;
     border-radius: 12rpx;
-    padding: 16rpx; 
-    margin-bottom: 16rpx;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-  }
+    line-height: 1; /* 确保文本垂直居中 */
+    height: auto; /* 高度自适应 */
+    margin: 0; /* 移除默认外边距 */
+}
+.setting-btn::after {
+    border: none; /* 移除小程序按钮默认边框 */
+}
   
-  .product-name {
-    font-weight: bold;
-    margin-bottom: 8rpx; 
-  }
-  
-  .product-info {
-    font-size: 24rpx;
-    color: #666;
-    display: flex;
-    flex-direction: column;
-    align-items: center; 
-  }
-  */
-
-  /* 弹窗样式 (保持不变) */
-  .modal-mask {
+/* 弹窗样式 */
+.modal-mask {
     position: fixed;
     left: 0; top: 0;
-    right: 0; bottom: 0; 
-    background: rgba(0,0,0,0.3);
+    right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); /* 半透明黑色背景 */
     z-index: 1000;
     display: flex;
     justify-content: center;
-    align-items: center; 
-  }
+    align-items: center;
+}
   
-  .modal {
+.modal {
     background: #fff;
     border-radius: 16rpx;
     padding: 32rpx 24rpx;
-    width: 80vw; 
-  }
+    width: 85vw; /* 弹窗宽度 */
+    max-height: 80vh; /* 最大高度，防止内容过多溢出 */
+    overflow-y: auto; /* 内容过多时可滚动 */
+}
   
-  .modal-title {
-    font-size: 30rpx;
+.modal-title {
+    font-size: 34rpx; /* 标题稍大 */
     font-weight: bold;
-    margin-bottom: 24rpx; 
-  }
+    margin-bottom: 24rpx;
+    text-align: center;
+}
   
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 16rpx; 
-  }
-  
-  .modal-actions {
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20rpx; /* 增加底部间距，防止内容和按钮重叠 */
+}
+
+/* 【关键修改】自定义 checkbox 样式 */
+.custom-checkbox-label {
+  display: flex;
+  align-items: center; /* 垂直居中对齐图标和文本 */
+  margin-bottom: 18rpx;
+  font-size: 30rpx;
+  color: #333;
+  padding: 5rpx 0; /* 增加点击区域的上下内边距 */
+}
+
+.custom-checkbox-icon {
+  width: 40rpx; /* 图标宽度 */
+  height: 40rpx; /* 图标高度 */
+  margin-right: 15rpx; /* 图标与文本间距 */
+  flex-shrink: 0; /* 防止图标被压缩 */
+}
+
+/* 确保 modal 的层级和可见性 (保留已有样式) */
+/* .modal-mask, .modal, .modal-title, .modal-actions, .modal-button, .modal-button.primary 等样式保持不变 */
+
+.modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 20rpx;
-    margin-top: 24rpx; 
-  }
-  
-  /* 【修正点】日期选择和回到今日按钮对齐优化 (保持不变) */
-  .date-controls {
+    margin-top: 30rpx; /* 增加按钮组与内容间距 */
+}
+.modal-button {
+    flex: 1; /* 按钮平均分配空间 */
+    height: 80rpx;
+    line-height: 80rpx;
+    font-size: 32rpx;
+    border-radius: 12rpx;
+    background-color: #f0f0f0; /* 取消按钮默认灰色 */
+    color: #666;
+}
+.modal-button.primary {
+    background-color: #07c160; /* 确定按钮绿色 */
+    color: #fff;
+}
+.modal-button::after {
+    border: none;
+}
+
+/* 日期选择和回到今日按钮对齐优化 (保持不变) */
+.date-controls {
     display: flex;
     align-items: center;
-    width: 100%;  /* 占据更多宽度 */
-    justify-content: flex-end; /* 靠右对齐 */
-    margin-top: 10rpx;  /* 与标题的间距 */
-  }
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 10rpx;
+}
   
-  .date-label {
+.date-label {
     font-size: 26rpx;
     color: #999;
-    margin-right: 10rpx; 
-  }
+    margin-right: 10rpx;
+}
   
-  .picker-value {
+.picker-value {
     font-size: 30rpx;
     font-weight: bold;
     color: #007aff;
-    padding: 5rpx 10rpx;  /* 增加点击区域 */
+    padding: 5rpx 10rpx;
     border: 1px solid #ddd;
     border-radius: 8rpx;
-    margin-right: 15rpx;  /* 与"回到今日"按钮的间距 */
-    min-width: 200rpx; /* 最小宽度，防止日期过短 */
-    text-align: center; 
-  }
+    margin-right: 15rpx;
+    min-width: 200rpx;
+    text-align: center;
+}
   
-  .today-button {
+.today-button {
     background-color: #07c160;
     color: #fff;
     font-size: 30rpx;
     padding: 8rpx 15rpx;
     border-radius: 8rpx;
-    height: auto; 
+    height: auto;
     line-height: normal;
     margin: 0;
-  }
+}
   
-  .today-button::after {
-    border: none; 
-  }
+.today-button::after {
+    border: none;
+}
   
-  /* 【修正点】业绩速览 Grid 布局优化 (保持不变) */
-  .summary-grid {
+/* 业绩速览 Grid 布局优化 (保持不变) */
+.summary-grid {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between; /* 均匀分布卡片 */ 
-    gap: 15rpx;  /* 定义网格项之间的间距 */
-  }
+    justify-content: space-between;
+    gap: 15rpx;
+}
   
-  .summary-item {
-    width: calc(33.33% - 10rpx);  /* 计算宽度，使得一行3个，并且留出gap间距 */
-    padding: 25rpx 0; /* 增加垂直内边距 */
+.summary-item {
+    width: calc(33.33% - 10rpx);
+    padding: 25rpx 0;
     text-align: center;
-    border: 1rpx solid #eee; 
-    border-radius: 12rpx; /* 稍微大一点的圆角 */
+    border: 1rpx solid #eee;
+    border-radius: 12rpx;
     box-sizing: border-box;
     background-color: #fcfcfc;
-    display: flex;  /* 让内容也居中 */
+    display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center; 
-  }
+    align-items: center;
+}
   
-  /* 【优化点】为不同指标的数值设置不同颜色，增加视觉区分度 (保持不变) */
-  .item-value {
-    font-size: 38rpx;  /* 稍微大一点的字体 */
+/* 【优化点】为不同指标的数值设置不同颜色，增加视觉区分度 */
+.item-value {
+    font-size: 38rpx;
     font-weight: bold;
     display: block;
-    margin-bottom: 8rpx; /* 增加与标签的间距 */
-    color: #333;  /* 默认颜色，具体颜色在下面覆盖 */
-  }
-  .summary-item:nth-child(1) .item-value { color: #f54438; }  /* 提成：红色 */
-  .summary-item:nth-child(2) .item-value { color: #e6a23c; } /* 搭赠：橙色 */
-  .summary-item:nth-child(3) .item-value { color: #0ed818; }  /* 总件数：蓝色 */
-  .summary-item:nth-child(4) .item-value { color: #256bf7; } /* 陈列费：蓝色 */
-  .summary-item:nth-child(5) .item-value { color: #f56c6c; }  /* 旧货：红色 */
-  .summary-item:nth-child(6) .item-value { color: #67c23a; }  /* 总订单数：深绿色 */
+    margin-bottom: 8rpx;
+    color: #333;
+}
+.summary-item:nth-child(1) .item-value { color: #f54438; }
+.summary-item:nth-child(2) .item-value { color: #e6a23c; }
+.summary-item:nth-child(3) .item-value { color: #0ed818; }
+.summary-item:nth-child(4) .item-value { color: #256bf7; }
+.summary-item:nth-child(5) .item-value { color: #f56c6c; }
+.summary-item:nth-child(6) .item-value { color: #67c23a; }
   
-  
-  .item-label {
+.item-label {
     font-size: 24rpx;
     color: #999;
-    display: block; 
-  }
+    display: block;
+}
   
-  .add-order-button {
+.add-order-button {
     width: 100%;
     height: 90rpx;
     line-height: 90rpx;
     background-color: #07c160;
     color: #fff;
-    font-size: 36rpx; 
+    font-size: 36rpx;
     border-radius: 10rpx;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 0;
-    margin-bottom: 30rpx; 
-  }
-  .add-order-button::after {
+    margin-bottom: 30rpx;
+}
+.add-order-button::after {
     border: none;
-    
-  }
+}
   
-  /* 重点产品售卖区块样式 */
-  /* top-products-section 仍然存在，但其内部的 product-rank-list 被替代 */
-  .top-products-section {
-    padding: 20rpx; /* 调整内边距，与新卡片设计更协调 */
+/* 重点产品售卖区块样式 */
+.top-products-section {
+    padding: 20rpx;
     background-color: #fff;
     border-radius: 16rpx;
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
     margin-bottom: 30rpx;
-  }
+}
 
-  .header-status {
-    min-width: 120rpx; /* 留出加载文本的空间 */
-    text-align: right;
-  }
-
-  .loading-text {
+.header-controls { /* 新增，用于放置按钮和加载文本 */
+    display: flex;
+    align-items: center;
+    gap: 15rpx;
+}
+  
+.loading-text {
     font-size: 26rpx;
     color: #999;
-  }
-
-  .product-card-list {
+}
+  
+.product-card-list {
     display: flex;
-    flex-wrap: wrap; /* 允许换行 */
-    gap: 20rpx; /* 卡片之间的间距 */
-    justify-content: space-between; /* 左右对齐 */
-    margin-top: 20rpx; /* 与标题的间距 */
-  }
-
-  .product-card {
-    background-color: #fcfcfc; /* 卡片背景色 */
+    flex-wrap: wrap;
+    gap: 20rpx;
+    justify-content: space-between;
+    margin-top: 20rpx;
+}
+  
+.product-card {
+    background-color: #fcfcfc;
     border-radius: 16rpx;
     border: 1rpx solid #eee;
     padding: 25rpx;
-    width: calc(50% - 10rpx); /* 两列布局，减去一半的gap */
+    width: calc(50% - 10rpx);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 220rpx; /* 确保卡片高度一致，适应更多信息 */
-    position: relative; /* 用于骨架屏动画 */
-    overflow: hidden; /* 确保骨架屏动画不溢出 */
-  }
-
-  .product-name {
+    min-height: 220rpx;
+    position: relative;
+    overflow: hidden;
+}
+  
+.product-name {
     font-size: 32rpx;
     font-weight: bold;
-    color: #007bff; /* 蓝色，突出产品名 */
+    color: #007bff;
     margin-bottom: 15rpx;
-    word-break: break-word; /* 避免长名称溢出 */
-  }
-
-  .product-stats-group {
+    word-break: break-word;
+}
+  
+.product-stats-group {
     display: flex;
     flex-direction: column;
-    gap: 8rpx; /* 统计项之间的间距 */
-  }
-
-  .stat-item {
+    gap: 8rpx;
+}
+  
+.stat-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 28rpx;
     color: #555;
-  }
-
-  .stat-label {
+}
+  
+.stat-label {
     color: #666;
-  }
-
-  .stat-value {
+}
+  
+.stat-value {
     font-weight: bold;
-  }
-
-  .highlight {
-    color: #e6a23c; /* 橙色，突出关键数字 */
-  }
-
-  /* 日环比趋势颜色 */
-  .trend-up {
-    color: #28a745; /* 绿色 */
-  }
-  .trend-down {
-    color: #dc3545; /* 红色 */
-  }
-  .trend-flat {
-    color: #6c757d; /* 灰色 */
-  }
-
-  /* 骨架屏动画 */
-  .skeleton-card {
+}
+  
+.highlight {
+    color: #e6a23c;
+}
+  
+.trend-up {
+    color: #28a745;
+}
+.trend-down {
+    color: #dc3545;
+}
+.trend-flat {
+    color: #6c757d;
+}
+  
+.skeleton-card {
     background-color: #f0f0f0;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: skeleton-loading 1.5s infinite;
-  }
-
-  @keyframes skeleton-loading {
+}
+  
+@keyframes skeleton-loading {
     0% {
       background-position: 200% 0;
-    }
+}
     100% {
       background-position: -200% 0;
-    }
-  }
-
-  .no-data-tip {
+}
+}
+  
+.no-data-tip {
     width: 100%;
     text-align: center;
     padding: 50rpx 0;
@@ -338,50 +347,16 @@
     background-color: #fff;
     border-radius: 16rpx;
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
-  }
+}
   
-  /* 原有的 product-rank-list, product-rank-header, product-rank-item 等相关样式将被新的卡片样式替代，不再需要 */
-  /*
-  .product-rank-list {
-    margin-top: 20rpx; 
-  }
-  
-  .product-rank-header, .product-rank-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15rpx 0; 
-    border-bottom: 1px solid #eee;
-    font-size: 28rpx;
-  }
-  
-  .product-rank-header {
-    font-weight: bold;
-    color: #666; 
-    background-color: #f8f8f8;
-    border-top: 1px solid #eee;
-    padding: 20rpx 0;
-  }
-  
-  .product-rank-item {
-    color: #333; 
-  }
-  
-  .rank-col-name {
-    flex: 2;
-    text-align: left;
-    padding-left: 10rpx; 
-  }
-  
-  .rank-col-qty, .rank-col-stores {
-    flex: 1;
-    text-align: center; 
-  }
-  
-  .no-data-message {
-    text-align: center;
-    color: #999;
-    font-size: 28rpx;
-    padding: 30rpx 0;
-  }
-  */
+/* 原有的 product-rank-list, product-rank-header, product-rank-item 等相关样式将被新的卡片样式替代，不再需要 */
+/*.product-rank-list,
+.product-rank-header,
+.product-rank-item,
+.product-card,
+.product-info,
+.rank-col-name,
+.rank-col-qty,
+.rank-col-stores,
+.no-data-message {
+    /* 这一部分会被新的样式覆盖或不再使用，保留以确保无冲突 */

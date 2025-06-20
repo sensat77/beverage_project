@@ -2,14 +2,16 @@
 
 from flask import Blueprint, request, jsonify
 from sqlalchemy import func, extract, distinct
-from datetime import datetime, timedelta # 新增导入 timedelta
+from datetime import datetime, timedelta
 from app.extensions import db
 from app.models.order import Order, OrderItem
+from app.models.product import Product
+from app.models.user_setting import UserSetting
 from .auth_decorator import token_required
 
 report_bp = Blueprint('report', __name__, url_prefix='/api/reports')
 
-# API 1: 获取指定月份每日的业绩分解
+# API 1: 获取指定月份每日的业绩分解 (保持不变)
 @report_bp.route('/daily_breakdown', methods=['GET'])
 @token_required
 def get_daily_breakdown(current_user):
@@ -33,7 +35,7 @@ def get_daily_breakdown(current_user):
     
     return jsonify([{'day': s.day, 'order_count': s.order_count, 'item_count': int(s.item_count or 0)} for s in daily_summaries])
 
-# API 2: 获取指定日期的订单列表
+# API 2: 获取指定日期的订单列表 (保持不变)
 @report_bp.route('/orders_by_date', methods=['GET'])
 @token_required
 def get_orders_by_date(current_user):
@@ -67,42 +69,59 @@ def delete_order(current_user, order_id):
     db.session.commit()
     return jsonify({'message': '订单删除成功'})
 
-# API 4: 获取指定日期重点产品售卖件数和家数 (用于首页展示)
+# API 4: 获取用户选择的重点产品售卖件数和家数
 @report_bp.route('/top_product_sales', methods=['GET'])
 @token_required
 def get_top_product_sales(current_user):
     date_str = request.args.get('date')
     try:
-        # 如果提供了日期，使用该日期；否则使用今天的日期
         target_date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else datetime.now().date()
     except ValueError:
-        return jsonify({"code": 400, "message": "日期格式不正确"}), 400 # 日期格式错误返回错误信息
+        return jsonify({"code": 400, "message": "日期格式不正确"}), 400
 
-    yesterday = target_date - timedelta(days=1) # 计算昨日日期
+    yesterday = target_date - timedelta(days=1)
 
-    # 查询今日重点产品销售数据
-    today_top_products_query = db.session.query(
+    # 获取用户自定义的重点产品列表
+    user_setting = UserSetting.query.filter_by(user_id=current_user.id).first()
+    selected_product_names = []
+    if user_setting and user_setting.selected_top_products:
+        selected_product_names = [name.strip() for name in user_setting.selected_top_products.split(',') if name.strip()]
+
+    # 如果用户未设置或设置为空，则默认返回销量前5的产品
+    if not selected_product_names:
+        # 查询今日销量前5的产品作为默认
+        default_top_products_query = db.session.query(
+            OrderItem.product_name,
+            func.sum(OrderItem.quantity).label('sales_count')
+        ).join(Order, Order.id == OrderItem.order_id)\
+        .filter(Order.user_id == current_user.id, Order.order_date == target_date)\
+        .group_by(OrderItem.product_name)\
+        .order_by(func.sum(OrderItem.quantity).desc())\
+        .limit(5)\
+        .all()
+        selected_product_names = [p.product_name for p in default_top_products_query]
+        # 如果依然为空，直接返回空列表
+        if not selected_product_names:
+            return jsonify({"code": 200, "message": "暂无重点产品数据", "data": []})
+
+
+    # 查询今日选定重点产品销售数据
+    today_products_query = db.session.query(
         OrderItem.product_name,
         func.sum(OrderItem.quantity).label('sales_count'),
-        func.count(distinct(Order.customer_name)).label('customer_count') # 统计去重后的客户名称数量
+        func.count(distinct(Order.customer_name)).label('customer_count')
     ).join(Order, Order.id == OrderItem.order_id)\
-     .filter(Order.user_id == current_user.id, Order.order_date == target_date)\
-     .group_by(OrderItem.product_name)\
-     .order_by(func.sum(OrderItem.quantity).desc())\
-     .limit(5)\
-     .all()
-    
-    # 将今日数据转换为字典，方便查找
-    today_products_map = {}
-    for p in today_top_products_query:
-        today_products_map[p.product_name] = {
-            'sales_count': int(p.sales_count or 0),
-            'customer_count': int(p.customer_count or 0)
-        }
+     .filter(
+        Order.user_id == current_user.id,
+        Order.order_date == target_date,
+        OrderItem.product_name.in_(selected_product_names) # 根据用户选择的产品名称筛选
+     ).group_by(OrderItem.product_name).all()
 
-    # 查询昨日重点产品销售数据 (只查询今日重点产品中包含的产品，减少查询量)
+    today_products_map = {p.product_name: {'sales_count': int(p.sales_count or 0), 'customer_count': int(p.customer_count or 0)} for p in today_products_query}
+
+    # 查询昨日选定重点产品销售数据
     yesterday_sales_map = {}
-    if today_products_map: # 如果今日有重点产品
+    if selected_product_names:
         yesterday_top_products_query = db.session.query(
             OrderItem.product_name,
             func.sum(OrderItem.quantity).label('sales_count')
@@ -110,35 +129,65 @@ def get_top_product_sales(current_user):
          .filter(
             Order.user_id == current_user.id,
             Order.order_date == yesterday,
-            OrderItem.product_name.in_(list(today_products_map.keys())) # 只查询今日重点产品中包含的产品
+            # 仅查询用户选择的产品，提高效率
+            OrderItem.product_name.in_(selected_product_names) 
          ).group_by(OrderItem.product_name).all()
 
         for item in yesterday_top_products_query:
             yesterday_sales_map[item.product_name] = int(item.sales_count or 0)
 
     result_list = []
-    # 遍历今日重点产品，加入昨日销量和日环比
-    for product_name, data in today_products_map.items():
-        sales_count = data['sales_count']
-        customer_count = data['customer_count']
-        
+    # 遍历用户选择的产品名称，确保即使今日无销量也显示，并保持用户选择的顺序（如果需要）
+    # 这里我们按用户选择的顺序进行遍历，而不是按今日销量排序
+    for product_name in selected_product_names:
+        sales_count = today_products_map.get(product_name, {}).get('sales_count', 0)
+        customer_count = today_products_map.get(product_name, {}).get('customer_count', 0)
         last_day_sales_count = yesterday_sales_map.get(product_name, 0)
         
         sales_change_percentage = 0.0
         if last_day_sales_count > 0:
             sales_change_percentage = ((sales_count - last_day_sales_count) / last_day_sales_count) * 100
-        elif sales_count > 0: # 今日有销售但昨日无销售，视为大幅增长
-            sales_change_percentage = 100.0 # 可以根据实际业务定义
-        else: # 今日昨日都无销售
-            sales_change_percentage = 0.0
+        elif sales_count > 0:
+            sales_change_percentage = 100.0 # 今日有销售，昨日无，视为100%增长
+        # else: 今日昨日都无销售，默认为0.0%
 
         result_list.append({
             'product_name': product_name,
-            'total_quantity': sales_count, # 保持 total_quantity 字段名与前端现有使用一致
+            'total_quantity': sales_count,
             'customer_count': customer_count,
-            'last_day_total_quantity': last_day_sales_count, # 新增字段：昨日总件数
-            'daily_change_percentage': round(sales_change_percentage, 2) # 新增字段：日环比百分比
+            'last_day_total_quantity': last_day_sales_count,
+            'daily_change_percentage': round(sales_change_percentage, 2)
         })
     
-    # 返回统一的 success/data/message 格式
-    return jsonify({"code": 200, "message": "重点产品数据获取成功", "data": result_list})
+    return jsonify({"code": 200, "message": "重点产品销售数据获取成功", "data": result_list})
+
+
+# 新增 API：保存用户选择的重点产品 (保持不变)
+@report_bp.route('/save_selected_products', methods=['POST'])
+@token_required
+def save_selected_products(current_user):
+    data = request.get_json()
+    if not data or 'product_names' not in data:
+        return jsonify({"code": 400, "message": "请求参数缺失: product_names"}), 400
+    
+    product_names = data['product_names']
+    
+    # 将列表转换为逗号分隔的字符串存储
+    # 排序是为了保持一致性，但前端传过来的顺序可能更重要，可根据需求调整sorted
+    selected_products_str = ",".join(sorted([name.strip() for name in product_names if name.strip()]))
+
+    user_setting = UserSetting.query.filter_by(user_id=current_user.id).first()
+    if user_setting:
+        user_setting.selected_top_products = selected_products_str
+    else:
+        user_setting = UserSetting(user_id=current_user.id, selected_top_products=selected_products_str)
+        db.session.add(user_setting)
+    
+    try:
+        db.session.commit()
+        return jsonify({"code": 200, "message": "用户选择的重点产品保存成功"})
+    except Exception as e:
+        db.session.rollback()
+        # 记录详细错误以便调试
+        print(f"Error saving user settings: {e}") 
+        return jsonify({"code": 500, "message": f"保存失败: {str(e)}"}), 500

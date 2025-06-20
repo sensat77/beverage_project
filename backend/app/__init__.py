@@ -3,7 +3,7 @@ from flask_cors import CORS
 from config import Config
 from .extensions import db, migrate
 # 导入模型，确保SQLAlchemy能找到它们
-from .models import user, product, order  # <--- 修改这一行
+from .models import user, product, order, user_setting  # <--- 修改这一行
 
 def create_app(config_class=Config):
     # 创建Flask应用实例
@@ -19,7 +19,7 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
 
     # 导入模型，确保SQLAlchemy能找到它们
-    from .models import user
+    #from .models import user
 
     # 注册蓝图（我们后面会在这里添加API路由）
     # 从我们刚创建的文件中导入auth_bp蓝图
